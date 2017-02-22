@@ -24,9 +24,9 @@ class Arboldedepuracion(object):
         if self.h == []:
             return 1
         else:
-            for i in range(len(self.h)):
-                L.append(self.h[i].profundidad()+1)
-        return max(L)
+            for hijo in self.h:
+                L.append(hijo.profundidad())
+        return max(L) + 1
         
     def aniadearbol(self,otro):
         self.h.append(otro)
