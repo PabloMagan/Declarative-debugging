@@ -10,7 +10,7 @@ def elemlista(lista,elemento):
         if lista[i]==elemento:
             return True
             
-variables = ["x","y","z"]
+variables = ["l","p"]
 class Arboldedepuracion(object):
     def __init__(self,funcion,argumento):
         self.f = funcion
@@ -45,16 +45,9 @@ class Arboldedepuracion(object):
         print "\t" * n, self.f, self.arg, "->", self.res
         for h in self.h:
             h.pintar(n + 1)
-                
-def top_down(arbol):
-    for i in range(len(arbol.h)):
-        print arbol.h[i].f,arbol.h[i].arg,"->",arbol.h[i].res
-        respuesta = raw_input(" ¿Es eso correcto?: ")
-        if respuesta == "si":
-            arbol.h[i].modestados(1)
-        else:
-            top_down(arbol.h[i])
 
+def top_down(arbol):
+    return self.h[0]
             
 def bug (arbol):
     for i in range(len(arbol.h)):
@@ -66,7 +59,27 @@ def bug (arbol):
             else:
                 bug(arbol.h[i])
                 
-            
+def quicksort(l):
+    if (l == []):
+        return l
+    else:
+        piv = l[0]
+        resto = l[1:]
+        l,r = partition(piv, resto)
+        l = quicksort(l)
+        r = quicksort(r)
+#        res = l + [piv] + r
+        res = l + r
+        return res
+
+def partition(p, l):
+    res = ([], [])
+    for elem in l:
+        if elem <= p:
+            res[0].append(elem)
+        else:
+            res[1].append(elem)
+    return res
 
 def f(x,y):
     x = h(x + 1)
@@ -86,7 +99,7 @@ import copy
 
 
 arbol = [Arboldedepuracion("foo", None)]
-me_importan = ['f', 'g', 'h']
+me_importan = ['quicksort', 'partition']
 
 def tracefunc(frame, event, arg, l):
       global arbol
@@ -106,7 +119,7 @@ def tracefunc(frame, event, arg, l):
       
 tfun = sys.gettrace()
 sys.settrace(lambda x,y,z : tracefunc(x,y,z,me_importan))
-f(3, 1)
+quicksort([3,1,5,7,4,-1])
 sys.settrace(tfun)
 arbol = (arbol[0].h)[0]
 #arbol.e = Estado.incorrecto
