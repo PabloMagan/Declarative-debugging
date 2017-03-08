@@ -4,30 +4,43 @@ Created on Thu Feb 23 14:52:12 2017
 
 @author: adrian
 """
+from enum import Enum
+import debuggingtree
 
 class DepuracionDeclarativa(object):
     def __init__(self):
-        self.strategy = 0 # 0 top-down 1 divide-and-query
+        self.strategy = strategies.top_down
         self.undo_list = []
-        self.arbol = None
+        self.tree = None
         
     def depuracion_declarativa(self):
-        while self.arbol.getBuggyNode() != None:
+        while self.tree.getBuggyNode([]) != None:
             self.ask()
     
     def ask(self):
-        # Hacer copia del arbol
-        # Guardar en la lista
-        if self.strategy == 0:
-            nodo = self.arbol.top_down()
-        elif self.strategy == 1:
-            nodo = self.arbol.divide_and_query()
+        self.undo_list.append(self.tree)
+        if self.strategy == strategies.top_down:
+            nodo = self.tree.top_down()
+        elif self.strategy == strategies.divide_and_query:
+            nodo = self.tree.divide_and_query()
         
         print(nodo.f, nodo.arg,"->", nodo.res)
-        respuesta = raw_input(" ¿Es eso correcto?: ")
+        respuesta = input("Is that right?: ")
+        
         if respuesta == "yes":
-            pass
+            nodo.modestados(2)
+            self.tree.delete_tree(nodo)
+            #quitar ese nodo
         elif respuesta == "no":
-            self.arbol = nodo
+            self.tree = nodo
         elif respuesta == "undo":
-            pass
+            self.tree = self.undo_list[-2]
+            self.undo_list = self.undo_list[:-2]
+
+class strategies(Enum):
+    top_down = 0
+    divide_and_query = 1
+
+
+depurar = DepuracionDeclarativa()
+depurar.tree = arbol
