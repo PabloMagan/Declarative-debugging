@@ -119,7 +119,7 @@ class Arboldedepuracion(object):
         for hijo in self.h:
             hijo.descendents(L)
         return L
-        
+
     def isitright(self):
         lista = []
         L = self.descendents([])

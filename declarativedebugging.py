@@ -8,14 +8,18 @@ from enum import Enum
 import debuggingtree
 
 class DepuracionDeclarativa(object):
-    def __init__(self):
+    def __init__(self,arbol):
         self.strategy = strategies.top_down
         self.undo_list = []
-        self.tree = None
+        self.tree = arbol
         
     def depuracion_declarativa(self):
-        while self.tree.getBuggyNode([]) != None:
+        buggy = self.tree.getBuggyNode([])
+        while buggy == None:
             self.ask()
+            buggy = self.tree.getBuggyNode([])
+        print(buggy)
+        return buggy
     
     def ask(self):
         self.undo_list.append(self.tree)
@@ -42,5 +46,4 @@ class strategies(Enum):
     divide_and_query = 1
 
 
-depurar = DepuracionDeclarativa()
-depurar.tree = arbol
+depurar = DepuracionDeclarativa(arbol)
