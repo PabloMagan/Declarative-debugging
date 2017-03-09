@@ -4,8 +4,7 @@ Created on Fri Nov 18 10:13:38 2016
 
 @author: usupclab-30
 """
-from enum import Enum
-
+from enums import State
 
 variables = ["l","p"]
 class Arboldedepuracion(object):
@@ -15,7 +14,13 @@ class Arboldedepuracion(object):
         self.res = None
         self.h = list()
         self.e = State.Unasked
-    
+
+    def equals(self,other):
+        if self.f == other.f and self.arg == other.arg:
+            return True
+        else:
+            return False
+   
     def profundidad(self):
         L=[]
         if self.h == []:
@@ -51,20 +56,28 @@ class Arboldedepuracion(object):
                     self.h[i].tree_to_coords(other,L)
         return L
     
-    def delete_tree(self,other):
-        L = self.tree_to_coords(other,[])
-        if len(L) == 1:
-            self.h.pop(L[0])
+    def colour_tree(self,other,state):
+        if self.equals(other):
+            self.e = state
         else:
-            self.h[L[0]].delete_tree(other)
+            for child in self.h:
+                child.colour_tree(other,state)
+        
             
     def modestados(self,estado):
         self.e = State(estado)
         for i in range(len(self.h)):
             self.h[i].modestados(estado)
             
+    def weightaux(self,l):
+        for child in self.h:
+            if child.e == State.Unasked:
+                l.append(1)
+                child.weightaux(l)
+        return len(l) + 1
+    
     def weight(self):
-        return len(self.descendents([]))
+        return self.weightaux([])
         
     def __str__(self):
         cadena = ""
@@ -84,40 +97,40 @@ class Arboldedepuracion(object):
             h.pintarest(n + 1)
             
     def top_down(self):
-        return self.h[0]
+        i = 0
+        while self.h[i].e != State.Unasked and i < len(self.h):
+            i = i + 1
+        return self.h[i]
 
     def divide_and_query(self):
-        for descendent in self.descendents([]):
-            if descendent.weight() == int(self.weight()/2):
-                print (descendent)
-                return descendent
-            if descendent.weight() == int(self.weight()/2 + 1):
-                print (descendent)
-                return descendent
+        node = self.weight()/2
+        dif = 100000
+        for child in self.descendents([]):
+            if abs(node - child.weight()) < dif:
+                dif = abs(node - child.weight())
+        i = 0
+        while abs(node - self.descendents([])[i].weight()) != dif:
+            i = i + 1
+        return self.descendents([])[i]
                 
-
     def getBuggyNode(self):
-        if self.isitright():
-            return None         
+        buggy = None
+        if self.e == State.Wrong and self.are_childs_right():
+            buggy = self
+            print(self)
         else:
-            if self.e == State.Unasked :
-                return self
-            else:
-                L = []
-                for i in range(len((self.h))):
-                    if not self.h[i].isitright():
-                        L.append(self.h[i])
-                if L == []:
-                    print(self)
-                    return self
-                else:
-                    L[0].getBuggyNode()
+            for child in self.h:
+                child.getBuggyNode()
+        return buggy
+                
+            
 
     def descendents(self,L):
         # L = []
         L.append(self)
         for hijo in self.h:
-            hijo.descendents(L)
+            if hijo.e == State.Unasked:
+                hijo.descendents(L)
         return L
 
     def isitright(self):
@@ -130,10 +143,13 @@ class Arboldedepuracion(object):
                 return False
         return True
         
-class State(Enum):
-    Unasked = 0
-    Wrong = 1
-    Right = 2
+    def are_childs_right(self):
+        ans = True
+        for child in self.h:
+            if child.e != State.Right:
+                ans = False
+        return ans
+            
 
         
 def quicksort(l):
@@ -200,6 +216,10 @@ quicksort([3,1,5,7,4,-1])
 sys.settrace(tfun)
 arbol = (arbol[0].h)[0]
 #arbol.e = Estado.incorrecto
-arbol.modestados(2)
+arbol.modestados(0)
+arbol.h[1].h[1].h[1].e = State.Right
+arbol.h[1].h[1].h[2].e = State.Right
 arbol.h[1].h[1].e = State.Wrong
-#arbol.e = State.Right
+arbol.h[1].h[1].h[0].e = State.Right
+arbol.h[2].e = State.Right
+arbol.modestados(0)

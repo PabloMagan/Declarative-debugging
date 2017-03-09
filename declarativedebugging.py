@@ -4,8 +4,8 @@ Created on Thu Feb 23 14:52:12 2017
 
 @author: adrian
 """
-from enum import Enum
 import debuggingtree
+from enums import State, strategies
 
 class DepuracionDeclarativa(object):
     def __init__(self,arbol):
@@ -32,8 +32,7 @@ class DepuracionDeclarativa(object):
         respuesta = input("Is that right?: ")
         
         if respuesta == "yes":
-            nodo.modestados(2)
-            self.tree.delete_tree(nodo)
+            self.colour_tree(nodo,State.Right)
             #quitar ese nodo
         elif respuesta == "no":
             self.tree = nodo
@@ -41,9 +40,7 @@ class DepuracionDeclarativa(object):
             self.tree = self.undo_list[-2]
             self.undo_list = self.undo_list[:-2]
 
-class strategies(Enum):
-    top_down = 0
-    divide_and_query = 1
 
 
-depurar = DepuracionDeclarativa(arbol)
+
+depurar = DepuracionDeclarativa(debuggingtree.arbol)
