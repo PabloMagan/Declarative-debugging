@@ -7,10 +7,11 @@ Created on Thu Mar  9 10:08:32 2017
 from enum import Enum
 
 class State(Enum):
-    Unasked = 0
-    Wrong = 1
-    Right = 2
-    
-class strategies(Enum):
-    top_down = 0
-    divide_and_query = 1
+    UNASKED = 0
+    WRONG = 1
+    RIGHT = 2
+
+
+class Strategy(Enum):
+    TOP_DOWN = 0
+    DIVIDE_AND_QUERY = 1

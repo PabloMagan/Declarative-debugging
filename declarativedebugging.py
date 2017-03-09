@@ -5,11 +5,11 @@ Created on Thu Feb 23 14:52:12 2017
 @author: adrian
 """
 import debuggingtree
-from enums import State, strategies
+from enums import State, Strategy
 
 class DepuracionDeclarativa(object):
     def __init__(self,arbol):
-        self.strategy = strategies.top_down
+        self.strategy = Strategy.TOP_DOWN
         self.undo_list = []
         self.tree = arbol
         
@@ -23,16 +23,16 @@ class DepuracionDeclarativa(object):
     
     def ask(self):
         self.undo_list.append(self.tree)
-        if self.strategy == strategies.top_down:
+        if self.strategy == Strategy.TOP_DOWN:
             nodo = self.tree.top_down()
-        elif self.strategy == strategies.divide_and_query:
+        elif self.strategy == Strategy.DIVIDE_AND_QUERY:
             nodo = self.tree.divide_and_query()
         
         print(nodo.f, nodo.arg,"->", nodo.res)
         respuesta = input("Is that right?: ")
         
         if respuesta == "yes":
-            self.colour_tree(nodo,State.Right)
+            self.colour_tree(nodo, State.RIGHT)
             #quitar ese nodo
         elif respuesta == "no":
             self.tree = nodo

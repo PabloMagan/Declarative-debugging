@@ -6,16 +6,17 @@ Created on Fri Nov 18 10:13:38 2016
 """
 from enums import State
 
-variables = ["l","p"]
+
 class Arboldedepuracion(object):
     def __init__(self,funcion,argumento):
         self.f = funcion
         self.arg = argumento
         self.res = None
         self.h = list()
-        self.e = State.Unasked
+        self.e = State.UNASKED
 
     def equals(self,other):
+        #### TODO: ESTO DEBE HACERSE EN UNA SOLA LÍNEA!!
         if self.f == other.f and self.arg == other.arg:
             return True
         else:
@@ -69,9 +70,9 @@ class Arboldedepuracion(object):
         for i in range(len(self.h)):
             self.h[i].modestados(estado)
             
-    def weightaux(self,l):
+    def weightaux(self,l): #### TODO: HACER SIN ACUMULADOR! NO ES NECESARIO GASTAR MEMORIA ADICIONAL
         for child in self.h:
-            if child.e == State.Unasked:
+            if child.e == State.UNASKED:
                 l.append(1)
                 child.weightaux(l)
         return len(l) + 1
@@ -98,16 +99,16 @@ class Arboldedepuracion(object):
             
     def top_down(self):
         i = 0
-        while self.h[i].e != State.Unasked and i < len(self.h):
+        while self.h[i].e != State.UNASKED and i < len(self.h):
             i = i + 1
         return self.h[i]
 
     def divide_and_query(self):
         node = self.weight()/2
-        dif = 100000
+        dif = 100000  #### TODO: USAR 'sys.maxsize'
         for child in self.descendents([]):
             if abs(node - child.weight()) < dif:
-                dif = abs(node - child.weight())
+                dif = abs(node - child.weight()) #### TODO: MEJOR UNA FUNCION update_weight() QUE ACTUALIZA EL PESO DE TODOS LOS NODOS Y LO ALMACENA EN UN ATRIBUTO DE CADA NODO
         i = 0
         while abs(node - self.descendents([])[i].weight()) != dif:
             i = i + 1
@@ -115,12 +116,12 @@ class Arboldedepuracion(object):
                 
     def getBuggyNode(self):
         buggy = None
-        if self.e == State.Wrong and self.are_childs_right():
+        if self.e == State.WRONG and self.are_childs_right():
             buggy = self
             print(self)
         else:
-            for child in self.h:
-                child.getBuggyNode()
+            for child in self.h: #### TODO: NO HAY QUE RECORRER SIEMPRE TODOS LOS HIJOS, UNICAMENTE MIENTRAS NO SE HAYA ENCONTRADO EL NODO BUGGY
+                child.getBuggyNode() #### TODO: Y LO QUE DEVUELVE CADA LLAMADA RECURSIVA DONDE LO GUARDAS? NORMAL QUE SIEMPRE DEVUELVAS None, PORQUE NO PROPAGAS LO QUE ENCUENTRAS EN LOS HIJOS
         return buggy
                 
             
@@ -129,7 +130,7 @@ class Arboldedepuracion(object):
         # L = []
         L.append(self)
         for hijo in self.h:
-            if hijo.e == State.Unasked:
+            if hijo.e == State.UNASKED:
                 hijo.descendents(L)
         return L
 
@@ -139,14 +140,14 @@ class Arboldedepuracion(object):
         for tree in L:
             lista.append(tree.e)
         for i in range(len(lista)):
-            if lista[i] != State.Right:
+            if lista[i] != State.RIGHT:
                 return False
         return True
         
     def are_childs_right(self):
         ans = True
         for child in self.h:
-            if child.e != State.Right:
+            if child.e != State.RIGHT:
                 ans = False
         return ans
             
@@ -190,7 +191,7 @@ import inspect
 import copy
 #import trace
 
-
+variables = ["l","p"]
 arbol = [Arboldedepuracion("foo", None)]
 me_importan = ['quicksort', 'partition']
 
@@ -212,14 +213,16 @@ def tracefunc(frame, event, arg, l):
       
 tfun = sys.gettrace()
 sys.settrace(lambda x,y,z : tracefunc(x,y,z,me_importan))
-quicksort([3,1,5,7,4,-1])
+#quicksort([3,1,5,7,4,-1])
+exec("quicksort([3,1,5,7,4,-1])") #Enrique: esto ayudará a lanzar la depuración con cualquier objetivo
 sys.settrace(tfun)
 arbol = (arbol[0].h)[0]
+arbol.pintar(0)
 #arbol.e = Estado.incorrecto
 arbol.modestados(0)
-arbol.h[1].h[1].h[1].e = State.Right
-arbol.h[1].h[1].h[2].e = State.Right
-arbol.h[1].h[1].e = State.Wrong
-arbol.h[1].h[1].h[0].e = State.Right
-arbol.h[2].e = State.Right
+arbol.h[1].h[1].h[1].e = State.RIGHT
+arbol.h[1].h[1].h[2].e = State.RIGHT
+arbol.h[1].h[1].e = State.WRONG
+arbol.h[1].h[1].h[0].e = State.RIGHT
+arbol.h[2].e = State.RIGHT
 arbol.modestados(0)
