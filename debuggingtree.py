@@ -14,6 +14,8 @@ class Arboldedepuracion(object):
         self.res = None
         self.h = list()
         self.e = State.UNASKED
+        # TODO: Sería interesante un atributo que guardase el tamaño del nodo (todos los nodos unasked que cuelgan + 1 si el nodo está unasked o nada si tiene "color")
+        # Se calcula al principio y se recalcula cuando se colorea.
 
     def equals(self,other):
         #### TODO: ESTO DEBE HACERSE EN UNA SOLA LÍNEA!!
@@ -21,7 +23,8 @@ class Arboldedepuracion(object):
             return True
         else:
             return False
-   
+
+    # TODO: Nombre en inglés   
     def profundidad(self):
         L=[]
         if self.h == []:
@@ -30,10 +33,12 @@ class Arboldedepuracion(object):
             for hijo in self.h:
                 L.append(hijo.profundidad())
         return max(L) + 1
-        
+
+    # TODO: Nombre en inglés
     def aniadearbol(self,otro):
         self.h.append(otro)
     
+    # TODO: Comentarios en el formato del fichero de estilo
     def coords_to_tree(self,lista):
         
         """La lista son las coordenadas para
@@ -49,6 +54,7 @@ class Arboldedepuracion(object):
         for i in range(len(self.h)):
             if self == other:
                 L.append(i)
+                # TODO: Hacer bucle while en vez de break
                 break
         for i in range(len(self.h)):
             for descendent in self.h[i].descendents([]):
@@ -57,6 +63,7 @@ class Arboldedepuracion(object):
                     self.h[i].tree_to_coords(other,L)
         return L
     
+    # TODO: Comentarios en formato adecuado.
     def colour_tree(self,other,state):
         if self.equals(other):
             self.e = state
@@ -64,13 +71,14 @@ class Arboldedepuracion(object):
             for child in self.h:
                 child.colour_tree(other,state)
         
-            
+    # TODO: Esta función modifica el estado de todos los nodos? por qué?
     def modestados(self,estado):
         self.e = State(estado)
+        # TODO: Hacer sin range ni len
         for i in range(len(self.h)):
             self.h[i].modestados(estado)
             
-    def weightaux(self,l): #### TODO: HACER SIN ACUMULADOR! NO ES NECESARIO GASTAR MEMORIA ADICIONAL
+    def weightaux(self,l): #### TODO: HACER ABAJO SIN ACUMULADOR! NO ES NECESARIO GASTAR MEMORIA ADICIONAL
         for child in self.h:
             if child.e == State.UNASKED:
                 l.append(1)
@@ -84,9 +92,8 @@ class Arboldedepuracion(object):
         cadena = ""
         cadena = cadena + str(self.pintar(1))
         return cadena
-            
+    
     def pintar(self, n):
-        # n = 1
         print( "\t" * n, self.f, self.arg, "->", self.res)
         for h in self.h:
             h.pintar(n + 1)
@@ -96,7 +103,13 @@ class Arboldedepuracion(object):
         print ("\t" * n, self.f, self.arg, "->", self.res, "=>", self.e)
         for h in self.h:
             h.pintarest(n + 1)
-            
+
+    # TODO: Cambiar.
+    # Ahora top down es complicado, porque hay que hacer lo siguiente: 
+    # Bucar el nodo rojo con el subárbol más pequeño.
+    # Preguntar por el primer hijo que no esté preguntado.
+    # Nótese que esto funciona porque tenemos una precondición: el árbol no
+    # tiene nodos buggy (aclarar en comentarios de la función).
     def top_down(self):
         i = 0
         while self.h[i].e != State.UNASKED and i < len(self.h):
@@ -146,6 +159,7 @@ class Arboldedepuracion(object):
         
     def are_childs_right(self):
         ans = True
+        # TODO: Usar un while para acabar según se encuentra uno que no sea RIGHT.
         for child in self.h:
             if child.e != State.RIGHT:
                 ans = False
