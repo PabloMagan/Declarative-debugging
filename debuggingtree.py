@@ -14,28 +14,32 @@ class Arboldedepuracion(object):
         self.res = None
         self.h = list()
         self.e = State.UNASKED
+        self.w = self.update_weight()
         # TODO: Sería interesante un atributo que guardase el tamaño del nodo (todos los nodos unasked que cuelgan + 1 si el nodo está unasked o nada si tiene "color")
         # Se calcula al principio y se recalcula cuando se colorea.
 
     def equals(self,other):
-        #### TODO: ESTO DEBE HACERSE EN UNA SOLA LÍNEA!!
-        if self.f == other.f and self.arg == other.arg:
-            return True
-        else:
-            return False
+        return self.f == other.f and self.arg == other.arg
 
-    # TODO: Nombre en inglés   
-    def profundidad(self):
+    def update_weight(self):
+        if self.h == []:
+            self.w = 1
+        else:
+            for child in self.h:
+                self.w = self.w + child.update_weight()
+        
+    
+    def depth(self):
         L=[]
         if self.h == []:
             return 1
         else:
             for hijo in self.h:
-                L.append(hijo.profundidad())
+                L.append(hijo.depth())
         return max(L) + 1
 
-    # TODO: Nombre en inglés
-    def aniadearbol(self,otro):
+
+    def add_tree(self,otro):
         self.h.append(otro)
     
     # TODO: Comentarios en el formato del fichero de estilo
@@ -72,19 +76,31 @@ class Arboldedepuracion(object):
                 child.colour_tree(other,state)
         
     # TODO: Esta función modifica el estado de todos los nodos? por qué?
+    """
+    La ulilizo para modificar el arbol mas facilmente y hacer pruebas luego
+    con las otras funciones, pero cuando ya no la necesite la quitare
+    """
     def modestados(self,estado):
         self.e = State(estado)
-        # TODO: Hacer sin range ni len
-        for i in range(len(self.h)):
-            self.h[i].modestados(estado)
+        for child in self.h:
+            child.modestados(estado)
+
             
+#    def weightaux(self,k): #### TODO: HACER ABAJO SIN ACUMULADOR! NO ES NECESARIO GASTAR MEMORIA ADICIONAL
+#        for child in self.h:
+#            if child.e == State.UNASKED:
+#                k = k + 1
+#                child.weightaux(k)
+#        return k + 1
+                                    
+    
     def weightaux(self,l): #### TODO: HACER ABAJO SIN ACUMULADOR! NO ES NECESARIO GASTAR MEMORIA ADICIONAL
         for child in self.h:
             if child.e == State.UNASKED:
                 l.append(1)
                 child.weightaux(l)
         return len(l) + 1
-    
+        
     def weight(self):
         return self.weightaux([])
         
@@ -118,7 +134,7 @@ class Arboldedepuracion(object):
 
     def divide_and_query(self):
         node = self.weight()/2
-        dif = 100000  #### TODO: USAR 'sys.maxsize'
+        dif = sys.maxsize  #### TODO: USAR 'sys.maxsize'
         for child in self.descendents([]):
             if abs(node - child.weight()) < dif:
                 dif = abs(node - child.weight()) #### TODO: MEJOR UNA FUNCION update_weight() QUE ACTUALIZA EL PESO DE TODOS LOS NODOS Y LO ALMACENA EN UN ATRIBUTO DE CADA NODO
@@ -159,10 +175,11 @@ class Arboldedepuracion(object):
         
     def are_childs_right(self):
         ans = True
-        # TODO: Usar un while para acabar según se encuentra uno que no sea RIGHT.
-        for child in self.h:
-            if child.e != State.RIGHT:
+        i = 0
+        while i < len(self.h) and ans:
+            if self.h[i].e != State.RIGHT:
                 ans = False
+            i = i + 1
         return ans
             
 
@@ -221,7 +238,7 @@ def tracefunc(frame, event, arg, l):
           ret = lambda x,y,z : tracefunc(x,y,z,l)
       elif event == "return":
           arbol[-1].res = arg
-          arbol[-2].aniadearbol(arbol[-1])
+          arbol[-2].add_tree(arbol[-1])
           arbol = arbol[:-1]
       return ret
       
