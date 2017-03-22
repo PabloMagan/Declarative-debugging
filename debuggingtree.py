@@ -14,19 +14,21 @@ class Arboldedepuracion(object):
         self.res = None
         self.h = list()
         self.e = State.UNASKED
-        self.w = self.update_weight()
-        # TODO: Sería interesante un atributo que guardase el tamaño del nodo (todos los nodos unasked que cuelgan + 1 si el nodo está unasked o nada si tiene "color")
-        # Se calcula al principio y se recalcula cuando se colorea.
+        self.w = 1
 
     def equals(self,other):
         return self.f == other.f and self.arg == other.arg
 
+    #TODO: Corregida OK
     def update_weight(self):
-        if self.h == []:
-            self.w = 1
-        else:
-            for child in self.h:
-                self.w = self.w + child.update_weight()
+        total_children = 0
+        for child in self.h:
+            child.update_weight()
+            total_children = total_children + child.w
+        myself = 0
+        if self.e == State.UNASKED:
+            myself = 1
+        self.w = total_children + myself
         
     
     def depth(self):
@@ -85,24 +87,9 @@ class Arboldedepuracion(object):
         for child in self.h:
             child.modestados(estado)
 
-            
-#    def weightaux(self,k): #### TODO: HACER ABAJO SIN ACUMULADOR! NO ES NECESARIO GASTAR MEMORIA ADICIONAL
-#        for child in self.h:
-#            if child.e == State.UNASKED:
-#                k = k + 1
-#                child.weightaux(k)
-#        return k + 1
-                                    
-    
-    def weightaux(self,l): #### TODO: HACER ABAJO SIN ACUMULADOR! NO ES NECESARIO GASTAR MEMORIA ADICIONAL
-        for child in self.h:
-            if child.e == State.UNASKED:
-                l.append(1)
-                child.weightaux(l)
-        return len(l) + 1
-        
+
     def weight(self):
-        return self.weightaux([])
+        return self.w
         
     def __str__(self):
         cadena = ""
@@ -132,28 +119,31 @@ class Arboldedepuracion(object):
             i = i + 1
         return self.h[i]
 
+    #TODO: Hacer más eficiente
     def divide_and_query(self):
         node = self.weight()/2
-        dif = sys.maxsize  #### TODO: USAR 'sys.maxsize'
-        for child in self.descendents([]):
+        dif = sys.maxsize
+        selected = -1
+        for idx,child in enumerate(self.descendents([])):
             if abs(node - child.weight()) < dif:
-                dif = abs(node - child.weight()) #### TODO: MEJOR UNA FUNCION update_weight() QUE ACTUALIZA EL PESO DE TODOS LOS NODOS Y LO ALMACENA EN UN ATRIBUTO DE CADA NODO
-        i = 0
-        while abs(node - self.descendents([])[i].weight()) != dif:
-            i = i + 1
-        return self.descendents([])[i]
+                dif = abs(node - child.weight()) 
+                selected = idx
+        return self.descendents([])[selected]
                 
     def getBuggyNode(self):
-        buggy = None
         if self.e == State.WRONG and self.are_childs_right():
             buggy = self
-            print(self)
         else:
-            for child in self.h: #### TODO: NO HAY QUE RECORRER SIEMPRE TODOS LOS HIJOS, UNICAMENTE MIENTRAS NO SE HAYA ENCONTRADO EL NODO BUGGY
-                child.getBuggyNode() #### TODO: Y LO QUE DEVUELVE CADA LLAMADA RECURSIVA DONDE LO GUARDAS? NORMAL QUE SIEMPRE DEVUELVAS None, PORQUE NO PROPAGAS LO QUE ENCUENTRAS EN LOS HIJOS
+            buggy_child = None
+            i = 0
+            while i < len(self.h) and buggy_child == None:
+                current = self.h[i]
+                buggy_child = current.getBuggyNode()
+                if buggy_child != None:
+                    buggy = buggy_child
+                i = i + 1
         return buggy
-                
-            
+
 
     def descendents(self,L):
         # L = []
@@ -248,6 +238,7 @@ sys.settrace(lambda x,y,z : tracefunc(x,y,z,me_importan))
 exec("quicksort([3,1,5,7,4,-1])") #Enrique: esto ayudará a lanzar la depuración con cualquier objetivo
 sys.settrace(tfun)
 arbol = (arbol[0].h)[0]
+arbol.update_weight()
 arbol.pintar(0)
 #arbol.e = Estado.incorrecto
 arbol.modestados(0)

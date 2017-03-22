@@ -32,10 +32,12 @@ class DepuracionDeclarativa(object):
         respuesta = input("Is that right?: ")
         
         if respuesta == "yes":
+            #TODO: Pensar si recalcular pesos dentro de colour.
             self.colour_tree(nodo, State.RIGHT)
-            #quitar ese nodo
+            self.tree.update_weight()
         elif respuesta == "no":
-            self.tree = nodo
+            self.colour_tree(nodo, State.WRONG)
+            self.tree.update_weight()
         elif respuesta == "undo":
             self.tree = self.undo_list[-2]
             self.undo_list = self.undo_list[:-2]
