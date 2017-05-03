@@ -4,7 +4,7 @@ Created on Thu Feb 23 14:52:12 2017
 
 @author: adrian
 """
-import debuggingtree
+import debuggingtree as dt
 from enums import State, Strategy
 
 class DepuracionDeclarativa(object):
@@ -14,10 +14,11 @@ class DepuracionDeclarativa(object):
         self.tree = arbol
         
     def depuracion_declarativa(self):
-        buggy = self.tree.getBuggyNode([])
+        buggy = self.tree.getBuggyNode()
         while buggy == None:
             self.ask()
-            buggy = self.tree.getBuggyNode([])
+            arbol = self.tree
+            buggy = dt.arbol.getBuggyNode()
         print(buggy)
         return buggy
     
@@ -33,10 +34,14 @@ class DepuracionDeclarativa(object):
         
         if respuesta == "yes":
             #TODO: Pensar si recalcular pesos dentro de colour.
-            self.colour_tree(nodo, State.RIGHT)
+            arbol = self.tree
+            dt.arbol.colour_tree(nodo, State.RIGHT)
+            self.tree = arbol
             self.tree.update_weight()
         elif respuesta == "no":
-            self.colour_tree(nodo, State.WRONG)
+            arbol = self.tree
+            dt.arbol.colour_tree(nodo, State.WRONG)
+            self.tree = arbol
             self.tree.update_weight()
         elif respuesta == "undo":
             self.tree = self.undo_list[-2]
@@ -45,4 +50,4 @@ class DepuracionDeclarativa(object):
 
 
 
-depurar = DepuracionDeclarativa(debuggingtree.arbol)
+depurar = DepuracionDeclarativa(dt.arbol)
