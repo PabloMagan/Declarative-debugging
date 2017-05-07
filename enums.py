@@ -15,3 +15,4 @@ class State(Enum):
 class Strategy(Enum):
     TOP_DOWN = 0
     DIVIDE_AND_QUERY = 1
+    TOP_DOWN_HEAVIEST_FIRST = 2

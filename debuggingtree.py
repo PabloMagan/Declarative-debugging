@@ -29,6 +29,9 @@ class Arboldedepuracion(object):
         if self.e == State.UNASKED:
             myself = 1
         self.w = total_children + myself
+        if self.e == State.RIGHT:
+            self.w = 0
+            
         
     
     def depth(self):
@@ -77,20 +80,6 @@ class Arboldedepuracion(object):
             for child in self.h:
                 child.colour_tree(other,state)
         
-    # TODO: Esta función modifica el estado de todos los nodos? por qué?
-    """
-    La ulilizo para modificar el arbol mas facilmente y hacer pruebas luego
-    con las otras funciones, pero cuando ya no la necesite la quitare
-    """
-    def modestados(self,estado):
-        self.e = State(estado)
-        for child in self.h:
-            child.modestados(estado)
-
-
-    def weight(self):
-        return self.w
-        
     def __str__(self):
         cadena = ""
         cadena = cadena + str(self.pintar(1))
@@ -113,24 +102,67 @@ class Arboldedepuracion(object):
     # Preguntar por el primer hijo que no esté preguntado.
     # Nótese que esto funciona porque tenemos una precondición: el árbol no
     # tiene nodos buggy (aclarar en comentarios de la función).
-    def top_down(self):
+                    
+    def search_smallest(self):  #NO FUNCIONA
+        weight = sys.maxsize
+        small = self
+        for child in self.h:
+            if (child.w < weight) and (child.e == State.WRONG):
+                weight = self.w
+                small = child
+            child.search_smallest()
+        return small
+
+
+
+    def top_down_old(self):
         i = 0
         while self.h[i].e != State.UNASKED and i < len(self.h):
             i = i + 1
         return self.h[i]
+    
+    
+    def top_down(self):
+        aux = self.search_smallest()
+        aux.top_down_old()
+        
+ 
+    def top_down_heaviest_first_old(self):
+        l = []
+        for child in self.h:
+            if child.e == State.UNASKED:
+                l.append(child.w)
+        aux = max(l)
+        i = 0
+        while (self.h[i].e != State.UNASKED and i < len(self.h) and self.h[i].w != aux):
+            i = i + 1
+        return self.h[i]
+  
+    
+    def top_down_heaviest_first(self):
+        aux = self.search_smallest()
+        aux.heaviest_first_old()
 
+    
     #TODO: Hacer más eficiente
-    def divide_and_query(self):
-        node = self.weight()/2
+    def divide_and_query_old(self):
+        node = self.w()/2
         dif = sys.maxsize
         selected = -1
         for idx,child in enumerate(self.descendents([])):
-            if abs(node - child.weight()) < dif:
-                dif = abs(node - child.weight()) 
+            if abs(node - child.w()) < dif:
+                dif = abs(node - child.w()) 
                 selected = idx
         return self.descendents([])[selected]
-                
+    
+    
+    def divide_and_query(self):
+        aux = self.search_smallest()
+        aux.divide_and_query_old()
+    
+            
     def getBuggyNode(self):
+        buggy  = None
         if self.e == State.WRONG and self.are_childs_right():
             buggy = self
         else:
@@ -239,12 +271,10 @@ exec("quicksort([3,1,5,7,4,-1])") #Enrique: esto ayudará a lanzar la depuració
 sys.settrace(tfun)
 arbol = (arbol[0].h)[0]
 arbol.update_weight()
-arbol.pintar(0)
 #arbol.e = Estado.incorrecto
-arbol.modestados(0)
 arbol.h[1].h[1].h[1].e = State.RIGHT
 arbol.h[1].h[1].h[2].e = State.RIGHT
 arbol.h[1].h[1].e = State.WRONG
 arbol.h[1].h[1].h[0].e = State.RIGHT
 arbol.h[2].e = State.RIGHT
-arbol.modestados(0)
+arbol.pintarest(0)

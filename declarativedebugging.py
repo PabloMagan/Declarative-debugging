@@ -30,6 +30,7 @@ class DepuracionDeclarativa(object):
             nodo = self.tree.divide_and_query()
         
         print(nodo.f, nodo.arg,"->", nodo.res)
+        print ('write td, dq or tdhf to change the strategy')
         respuesta = input("Is that right?: ")
         
         if respuesta == "yes":
@@ -46,6 +47,13 @@ class DepuracionDeclarativa(object):
         elif respuesta == "undo":
             self.tree = self.undo_list[-2]
             self.undo_list = self.undo_list[:-2]
+        elif respuesta == "td":
+            self.strategy = Strategy.TOP_DOWN
+        elif respuesta == "dq":
+            self.strategy = Strategy.DIVIDE_AND_QUERY
+        elif respuesta == "tdhf":
+            self.strategy = Strategy.TOP_DOWN_HEAVIEST_FIRST
+            
 
 
 
