@@ -124,7 +124,7 @@ class Arboldedepuracion(object):
     
     def top_down(self):
         aux = self.search_smallest()
-        aux.top_down_old()
+        return aux.top_down_old()
         
  
     def top_down_heaviest_first_old(self):
@@ -141,7 +141,7 @@ class Arboldedepuracion(object):
     
     def top_down_heaviest_first(self):
         aux = self.search_smallest()
-        aux.heaviest_first_old()
+        return aux.heaviest_first_old()
 
     
     #TODO: Hacer más eficiente
@@ -158,7 +158,7 @@ class Arboldedepuracion(object):
     
     def divide_and_query(self):
         aux = self.search_smallest()
-        aux.divide_and_query_old()
+        return aux.divide_and_query_old()
     
             
     def getBuggyNode(self):
