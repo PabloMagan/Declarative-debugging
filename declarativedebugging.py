@@ -9,7 +9,7 @@ from enums import State, Strategy
 
 class DepuracionDeclarativa(object):
     def __init__(self,arbol):
-        self.strategy = Strategy.TOP_DOWN
+        self.strategy = Strategy.DIVIDE_AND_QUERY
         self.undo_list = []
         self.tree = arbol
         
@@ -19,7 +19,7 @@ class DepuracionDeclarativa(object):
             self.ask()
             arbol = self.tree
             buggy = dt.arbol.getBuggyNode()
-        print(buggy)
+        buggy.pintarest(0)
         return buggy
     
     def ask(self):
@@ -28,13 +28,14 @@ class DepuracionDeclarativa(object):
             nodo = self.tree.top_down()
         elif self.strategy == Strategy.DIVIDE_AND_QUERY:
             nodo = self.tree.divide_and_query()
+        elif self.strategy == Strategy.TOP_DOWN_HEAVIEST_FIRST:
+            nodo = self.tree.top_down_heaviest_first()
         
         print(nodo.f, nodo.arg,"->", nodo.res)
         print ('write td, dq, or tdhf to change the strategy')
         respuesta = input("Is that right?: ")
         
         if respuesta == "yes":
-            #TODO: Pensar si recalcular pesos dentro de colour.
             arbol = self.tree
             dt.arbol.colour_tree(nodo, State.RIGHT)
             self.tree = arbol

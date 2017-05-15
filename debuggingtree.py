@@ -103,19 +103,19 @@ class Arboldedepuracion(object):
     # Nótese que esto funciona porque tenemos una precondición: el árbol no
     # tiene nodos buggy (aclarar en comentarios de la función).
                     
-    def search_smallest(self):  #NO FUNCIONA
-        weight = sys.maxsize
-        small = self
+    def search_smallest(self):
+        if self.e == State.WRONG:
+            small = (self,self.w)
+        else:
+            small = (None,sys.maxsize)
         for child in self.h:
-            if (child.w < weight) and (child.e == State.WRONG):
-                weight = self.w
-                small = child
-            child.search_smallest()
+            small_child = child.search_smallest()
+            if small_child[1] < small[1]:
+                small = small_child
         return small
+                    
 
-
-
-    def top_down_old(self):
+    def top_down_aux(self):
         i = 0
         while self.h[i].e != State.UNASKED and i < len(self.h):
             i = i + 1
@@ -123,42 +123,39 @@ class Arboldedepuracion(object):
     
     
     def top_down(self):
-        aux = self.search_smallest()
-        return aux.top_down_old()
+        aux = self.search_smallest()[0]
+        return aux.top_down_aux()
         
  
-    def top_down_heaviest_first_old(self):
-        l = []
+    def top_down_heaviest_first_aux(self):
+        maximun = (None,-sys.maxsize)
         for child in self.h:
-            if child.e == State.UNASKED:
-                l.append(child.w)
-        aux = max(l)
-        i = 0
-        while (self.h[i].e != State.UNASKED and i < len(self.h) and self.h[i].w != aux):
-            i = i + 1
-        return self.h[i]
+            if child.e == State.UNASKED and child.w > maximun[1]:
+                maximun = (child,child.w)
+        return maximun[0]
+        
   
     
     def top_down_heaviest_first(self):
-        aux = self.search_smallest()
-        return aux.heaviest_first_old()
+        aux = self.search_smallest()[0]
+        return aux.top_down_heaviest_first_aux()
 
     
     #TODO: Hacer más eficiente
-    def divide_and_query_old(self):
-        node = self.w()/2
+    def divide_and_query_aux(self):
+        node = self.w/2
         dif = sys.maxsize
         selected = -1
         for idx,child in enumerate(self.descendents([])):
-            if abs(node - child.w()) < dif:
-                dif = abs(node - child.w()) 
+            if abs(node - child.w) < dif:
+                dif = abs(node - child.w) 
                 selected = idx
         return self.descendents([])[selected]
     
     
     def divide_and_query(self):
-        aux = self.search_smallest()
-        return aux.divide_and_query_old()
+        aux = self.search_smallest()[0]
+        return aux.divide_and_query_aux()
     
             
     def getBuggyNode(self):
@@ -215,7 +212,7 @@ def quicksort(l):
         l,r = partition(piv, resto)
         l = quicksort(l)
         r = quicksort(r)
-#        res = l + [piv] + r
+#res = l + [piv] + r
         res = l + r
         return res
 
@@ -271,10 +268,10 @@ exec("quicksort([3,1,5,7,4,-1])") #Enrique: esto ayudará a lanzar la depuració
 sys.settrace(tfun)
 arbol = (arbol[0].h)[0]
 arbol.update_weight()
-#arbol.e = Estado.incorrecto
-arbol.h[1].h[1].h[1].e = State.RIGHT
-arbol.h[1].h[1].h[2].e = State.RIGHT
-arbol.h[1].h[1].e = State.WRONG
-arbol.h[1].h[1].h[0].e = State.RIGHT
-arbol.h[2].e = State.RIGHT
+arbol.e = State.WRONG
+#arbol.h[1].h[1].h[1].e = State.RIGHT
+#arbol.h[1].h[1].h[2].e = State.RIGHT
+#arbol.h[1].h[1].e = State.WRONG
+#arbol.h[1].h[1].h[0].e = State.RIGHT
+#arbol.h[2].e = State.RIGHT
 arbol.pintarest(0)
