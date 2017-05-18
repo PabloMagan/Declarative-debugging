@@ -8,9 +8,10 @@ from enums import State
 
 
 class Arboldedepuracion(object):
-    def __init__(self,funcion,argumento):
+    def __init__(self,funcion,argumento, salida):
         self.f = funcion
         self.arg = argumento
+        self.exit = salida
         self.res = None
         self.h = list()
         self.e = State.UNASKED
@@ -142,20 +143,31 @@ class Arboldedepuracion(object):
 
     
     #TODO: Hacer más eficiente
-    def divide_and_query_aux(self):
-        node = self.w/2
-        dif = sys.maxsize
-        selected = -1
-        for idx,child in enumerate(self.descendents([])):
-            if abs(node - child.w) < dif:
-                dif = abs(node - child.w) 
-                selected = idx
-        return self.descendents([])[selected]
+#    def divide_and_query_aux(self):
+#        node = self.w/2
+#        dif = sys.maxsize
+#        selected = -1
+#        for idx,child in enumerate(self.descendents([])):
+#            if abs(node - child.w) < dif:
+#                dif = abs(node - child.w) 
+#                selected = idx
+#        return self.descendents([])[selected]
+    
+    def divide_and_query_aux(self, weight):
+        if self.e == State.UNASKED:
+            divide = (self,abs(self.w - weight))
+        else:
+            divide = (None,sys.maxsize)
+        for child in self.h:
+            small_child = child.divide_and_query_aux(weight)
+            if small_child[1] < divide[1]:
+                divide = small_child
+        return divide
     
     
     def divide_and_query(self):
         aux = self.search_smallest()[0]
-        return aux.divide_and_query_aux()
+        return aux.divide_and_query_aux(aux.w/2.0)[0]
     
             
     def getBuggyNode(self):
@@ -225,6 +237,11 @@ def partition(p, l):
             res[1].append(elem)
     return res
 
+def prueba(lista):
+    a = lista[0]
+    lista.pop(0)
+    return a
+
 def f(x,y):
     x = h(x + 1)
     return g(4) + g(y)
@@ -241,9 +258,11 @@ import inspect
 import copy
 #import trace
 
-variables = ["l","p"]
-arbol = [Arboldedepuracion("foo", None)]
+#variables = ["l","p"]
+variables = ["lista"]
+arbol = [Arboldedepuracion("foo", None, None)]
 me_importan = ['quicksort', 'partition']
+#me_importan = ['prueba']
 
 def tracefunc(frame, event, arg, l):
       global arbol
@@ -252,11 +271,12 @@ def tracefunc(frame, event, arg, l):
       
       if event == "call" and frame.f_code.co_name in l:
           # Si no hacemos deepcopy de locals a veces sobreescribe
-          n = Arboldedepuracion(frame.f_code.co_name,copy.deepcopy(inspect.getargvalues(frame).locals))
+          n = Arboldedepuracion(frame.f_code.co_name,copy.deepcopy(inspect.getargvalues(frame).locals),None)
           arbol.append(n)
           ret = lambda x,y,z : tracefunc(x,y,z,l)
       elif event == "return":
           arbol[-1].res = arg
+          arbol[-1].exit = inspect.getargvalues(frame).locals
           arbol[-2].add_tree(arbol[-1])
           arbol = arbol[:-1]
       return ret
@@ -265,6 +285,7 @@ tfun = sys.gettrace()
 sys.settrace(lambda x,y,z : tracefunc(x,y,z,me_importan))
 #quicksort([3,1,5,7,4,-1])
 exec("quicksort([3,1,5,7,4,-1])") #Enrique: esto ayudará a lanzar la depuración con cualquier objetivo
+#exec("prueba([3,1,5,7,4,-1])")
 sys.settrace(tfun)
 arbol = (arbol[0].h)[0]
 arbol.update_weight()
