@@ -18,6 +18,8 @@ class DepuracionDeclarativa(object):
         while buggy == None:
             self.ask()
             arbol = self.tree
+            #TODO: Esto en algún momento habrá que arreglarlo, porque depura
+            # la variable global arbol del otro fichero, la variable local no vale para nada
             buggy = dt.arbol.getBuggyNode()
         buggy.pintarest(0)
         return buggy

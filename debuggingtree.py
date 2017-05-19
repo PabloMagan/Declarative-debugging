@@ -185,7 +185,7 @@ class Arboldedepuracion(object):
                 i = i + 1
         return buggy
 
-
+    #TODO: Borrar
     def descendents(self,L):
         # L = []
         L.append(self)
@@ -194,6 +194,7 @@ class Arboldedepuracion(object):
                 hijo.descendents(L)
         return L
 
+    #TODO: Borrar
     def isitright(self):
         lista = []
         L = self.descendents([])
