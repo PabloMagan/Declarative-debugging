@@ -277,6 +277,14 @@ def tracefunc(frame, event, arg, l):
           ret = lambda x,y,z : tracefunc(x,y,z,l)
       elif event == "return":
           arbol[-1].res = arg
+          # TODO: falta el deepcopy para evitar problemas
+          # 
+          # TODO: coger todos los 'locals' en un 'return' hace que se devuelvan tambien todas
+          #       las variables locales del método (además de los parámetros).
+          #       Implementa una función de limpieza que recorre cada nodo del árbol y 
+          #       elimina del atributo 'exit' todas aquellas entradas que no 
+          #       aparecen en el atributo 'args'. Esta función se debe invocar
+          #       tras construir el árbol. 
           arbol[-1].exit = inspect.getargvalues(frame).locals
           arbol[-2].add_tree(arbol[-1])
           arbol = arbol[:-1]
