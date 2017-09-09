@@ -7,95 +7,177 @@ Created on Fri Nov 18 10:13:38 2016
 from enums import State
 
 
-class Arboldedepuracion(object):
-    def __init__(self,funcion,argumento, salida):
-        self.f = funcion
-        self.arg = argumento
-        self.exit = salida
-        self.res = None
-        self.h = list()
-        self.e = State.UNASKED
-        self.w = 1
+class DebuggingTree(object):
+    def __init__(self, function, arguments, out):
+        self.fun = function
+        self.arg = arguments
+        self.out = out
+        self.ret = None
+        self.child = list()
+        self.state = State.UNASKED
+        self.weight = 1
+
 
     def equals(self,other):
-        return self.f == other.f and self.arg == other.arg
-
-    #TODO: Corregida OK
+        """
+        Given two class objects this function returns a boolean saying if
+        they are equals or not.
+        
+        Parameters
+        ----------
+        self: (DebuggingTree) First tree.
+        other: (DebuggingTree) Second tree.
+        
+        Returns
+        -------
+        Bool 
+            If they are equals or not.
+        """
+        return self.fun == other.fun and self.arg == other.arg
+    
+    
     def update_weight(self):
+        
+        """
+        This function update the weight of the tree. It will be called each
+        time that you modifies one state in tree.
+        
+        Parameters
+        ----------
+        self: (DebuggingTree) The tree to update his weight.
+        
+        Returns
+        -------
+        None
+        Just modifies the self.weight parameter in the tree.
+        """
+        
         total_children = 0
-        for child in self.h:
+        for child in self.child:
             child.update_weight()
-            total_children = total_children + child.w
+            total_children = total_children + child.weight
         myself = 0
-        if self.e == State.UNASKED:
+        if self.state == State.UNASKED:
             myself = 1
-        self.w = total_children + myself
-        if self.e == State.RIGHT:
-            self.w = 0
-            
-        
-    
-    def depth(self):
-        L=[]
-        if self.h == []:
-            return 1
-        else:
-            for hijo in self.h:
-                L.append(hijo.depth())
-        return max(L) + 1
+        self.weight = total_children + myself
+        if self.state == State.RIGHT:
+            self.weight = 0
 
 
-    def add_tree(self,otro):
-        self.h.append(otro)
-    
-    # TODO: Comentarios en el formato del fichero de estilo
-    def coords_to_tree(self,lista):
+    def add_tree(self,other):
+                
+        """
+        This function add a new tree as child of the current tree
         
-        """La lista son las coordenadas para
-        encontrar el arbol buscado"""
+        Parameters
+        ----------
+        self: (DebuggingTree) The main tree.
+        other: (DebuggingTree) The tree to add.
         
-        if lista == []:
-            return self
-        else:
-            return self.h[lista.pop(0)].coords_to_tree(lista)
+        Returns
+        -------
+        None
+        Just modifies the main tree.
+        """
         
-    def tree_to_coords(self,other,L):
-        # L = []
-        for i in range(len(self.h)):
-            if self == other:
-                L.append(i)
-                # TODO: Hacer bucle while en vez de break
-                break
-        for i in range(len(self.h)):
-            for descendent in self.h[i].descendents([]):
-                if descendent == other:
-                    L.append(i)
-                    self.h[i].tree_to_coords(other,L)
-        return L
-    
-    # TODO: Comentarios en formato adecuado.
+        self.child.append(other)
+
+        
     def colour_tree(self,other,state):
-        if self.equals(other):
-            self.e = state
-        else:
-            for child in self.h:
-                child.colour_tree(other,state)
         
+        """
+        This function modifies the state in one node and with a state given.
+        It will be used for modifies the tree when it recieves an answer from
+        the client.
+        
+        Parameters
+        ----------
+        self: (DebuggingTree) The main tree.
+        other: (DebuggingTree) The tree that the function look for in the
+               main tree to modifies the state.
+        state:(State) The new state for the node.
+        
+        Returns
+        -------
+        None
+        Just modifies the tree.
+        """
+        
+        if self.equals(other):
+            self.state = state
+        else:
+            for child in self.child:
+                child.colour_tree(other,state)
+
+    def clean_tree(self):
+        
+        """
+        This function clean the self.out param in the tree because when it was
+        created, it had some extra information that we dont need.
+        
+        Parameters
+        ----------
+        self: (DebuggingTree) The main tree.
+        
+        Returns
+        -------
+        None
+        Just modifies the tree.
+        """
+        
+        aux_dict = dict()
+        for i in self.out:
+            if i in self.arg:
+                aux_dict[i] = self.out[i]
+        self.out = aux_dict
+        for child in self.child:
+            child.clean_tree()
+
+    def is_compresed(self):
+        b = True
+        fun = self.fun
+        i = 0
+        while i < len(self.child):
+            if self.child[i].fun == fun:
+                b = False
+                break
+            i = i+1
+        for child in self.child:
+            b = b and child.is_compresed()
+        return b
+        
+
+       
+    def tree_compression(self):
+        i = 0
+        print (len(self.child))
+        while i < len(self.child):
+            if self.child[i].fun == self.fun:
+                grandchildren = self.child[i].child
+                self.child.pop(i)
+                self.child = self.child + grandchildren
+                break
+            i = i+1
+        if not self.is_compresed():
+            self.tree_compression()
+                
+                
+    
     def __str__(self):
         cadena = ""
-        cadena = cadena + str(self.pintar(1))
+        cadena = cadena + str(self.paint(1))
         return cadena
     
-    def pintar(self, n):
-        print( "\t" * n, self.f, self.arg, "->", self.res)
-        for h in self.h:
-            h.pintar(n + 1)
+    def paint(self, n):
+        print( "\t" * n, self.fun, self.arg, "->", self.ret)
+        for child in self.child:
+            child.paint(n + 1)
 
-    def pintarest(self, n):
+    def paint_state(self, n):
         # n = 1
-        print ("\t" * n, self.f, self.arg, "->", self.res, "=>", self.e)
-        for h in self.h:
-            h.pintarest(n + 1)
+        print ("\t" * n, self.fun, self.arg, "->", self.ret, "=>", self.state)
+        for child in self.child:
+            child.paint_state(n + 1)
 
     # TODO: Cambiar.
     # Ahora top down es complicado, porque hay que hacer lo siguiente: 
@@ -105,11 +187,25 @@ class Arboldedepuracion(object):
     # tiene nodos buggy (aclarar en comentarios de la función).
                     
     def search_smallest(self):
-        if self.e == State.WRONG:
-            small = (self,self.w)
+        
+        """
+        This function look for the smallest wrong sub-tree in the tree given.
+        
+        Parameters
+        ----------
+        self: (DebuggingTree) The main tree.
+        
+        Returns
+        -------
+        DebuggingTree
+        Is the smallest sub-tree with wrong state.
+        """
+        
+        if self.state == State.WRONG:
+            small = (self,self.weight)
         else:
             small = (None,sys.maxsize)
-        for child in self.h:
+        for child in self.child:
             small_child = child.search_smallest()
             if small_child[1] < small[1]:
                 small = small_child
@@ -117,10 +213,25 @@ class Arboldedepuracion(object):
                     
 
     def top_down_aux(self):
+        
+        """
+        This is an auxiliary function to look for the node to ask in the tree 
+        given. It is chosen by the method top down.
+        
+        Parameters
+        ----------
+        self: (DebuggingTree) The main tree.
+        
+        Returns
+        -------
+        DebuggingTree
+        The node chosen by the top down method.
+        """
+        
         i = 0
-        while self.h[i].e != State.UNASKED and i < len(self.h):
+        while self.h[i].state != State.UNASKED and i < len(self.child):
             i = i + 1
-        return self.h[i]
+        return self.child[i]
     
     
     def top_down(self):
@@ -129,10 +240,25 @@ class Arboldedepuracion(object):
         
  
     def top_down_heaviest_first_aux(self):
+        
+        """
+        This is an auxiliary function to look for the node to ask in the tree 
+        given. It is chosen by the method top down heaviest first.
+        
+        Parameters
+        ----------
+        self: (DebuggingTree) The main tree.
+        
+        Returns
+        -------
+        DebuggingTree
+        The node chosen by the top down heaviest first method.
+        """
+        
         maximun = (None,-sys.maxsize)
-        for child in self.h:
-            if child.e == State.UNASKED and child.w > maximun[1]:
-                maximun = (child,child.w)
+        for child in self.child:
+            if child.state == State.UNASKED and child.weight > maximun[1]:
+                maximun = (child,child.weight)
         return maximun[0]
         
   
@@ -142,23 +268,27 @@ class Arboldedepuracion(object):
         return aux.top_down_heaviest_first_aux()
 
     
-    #TODO: Hacer más eficiente
-#    def divide_and_query_aux(self):
-#        node = self.w/2
-#        dif = sys.maxsize
-#        selected = -1
-#        for idx,child in enumerate(self.descendents([])):
-#            if abs(node - child.w) < dif:
-#                dif = abs(node - child.w) 
-#                selected = idx
-#        return self.descendents([])[selected]
-    
     def divide_and_query_aux(self, weight):
-        if self.e == State.UNASKED:
-            divide = (self,abs(self.w - weight))
+        
+        """
+        This is an auxiliary function to look for the node to ask in the tree 
+        given. It is chosen by the method divide and query.
+        
+        Parameters
+        ----------
+        self: (DebuggingTree) The main tree.
+        
+        Returns
+        -------
+        DebuggingTree
+        The node chosen by the divide and query method.
+        """
+        
+        if self.state == State.UNASKED:
+            divide = (self,abs(self.weight - weight))
         else:
             divide = (None,sys.maxsize)
-        for child in self.h:
+        for child in self.child:
             small_child = child.divide_and_query_aux(weight)
             if small_child[1] < divide[1]:
                 divide = small_child
@@ -167,49 +297,30 @@ class Arboldedepuracion(object):
     
     def divide_and_query(self):
         aux = self.search_smallest()[0]
-        return aux.divide_and_query_aux(aux.w/2.0)[0]
+        return aux.divide_and_query_aux(aux.weight/2.0)[0]
     
             
     def getBuggyNode(self):
         buggy  = None
-        if self.e == State.WRONG and self.are_childs_right():
+        if self.state == State.WRONG and self.are_children_right():
             buggy = self
         else:
             buggy_child = None
             i = 0
-            while i < len(self.h) and buggy_child == None:
-                current = self.h[i]
+            while i < len(self.child) and buggy_child == None:
+                current = self.child[i]
                 buggy_child = current.getBuggyNode()
                 if buggy_child != None:
                     buggy = buggy_child
                 i = i + 1
         return buggy
 
-    #TODO: Borrar
-    def descendents(self,L):
-        # L = []
-        L.append(self)
-        for hijo in self.h:
-            if hijo.e == State.UNASKED:
-                hijo.descendents(L)
-        return L
-
-    #TODO: Borrar
-    def isitright(self):
-        lista = []
-        L = self.descendents([])
-        for tree in L:
-            lista.append(tree.e)
-        for i in range(len(lista)):
-            if lista[i] != State.RIGHT:
-                return False
-        return True
         
-    def are_childs_right(self):
+    def are_children_right(self):
         ans = True
         i = 0
-        while i < len(self.h) and ans:
-            if self.h[i].e != State.RIGHT:
+        while i < len(self.child) and ans:
+            if self.child[i].state != State.RIGHT:
                 ans = False
             i = i + 1
         return ans
@@ -257,37 +368,26 @@ def h(x):
 import sys
 import inspect
 import copy
-#import trace
 
-#variables = ["l","p"]
-variables = ["lista"]
-arbol = [Arboldedepuracion("foo", None, None)]
+tree = [DebuggingTree("foo", None, None)]
 me_importan = ['quicksort', 'partition']
 #me_importan = ['prueba']
 
 def tracefunc(frame, event, arg, l):
-      global arbol
+      global tree
       ret = None
       # TODO Faltaría lo de obtener el nombre de modulo y centrarnos solo en ese
       
       if event == "call" and frame.f_code.co_name in l:
           # Si no hacemos deepcopy de locals a veces sobreescribe
-          n = Arboldedepuracion(frame.f_code.co_name,copy.deepcopy(inspect.getargvalues(frame).locals),None)
-          arbol.append(n)
+          n = DebuggingTree(frame.f_code.co_name,copy.deepcopy(inspect.getargvalues(frame).locals),None)
+          tree.append(n)
           ret = lambda x,y,z : tracefunc(x,y,z,l)
       elif event == "return":
-          arbol[-1].res = arg
-          # TODO: falta el deepcopy para evitar problemas
-          # 
-          # TODO: coger todos los 'locals' en un 'return' hace que se devuelvan tambien todas
-          #       las variables locales del método (además de los parámetros).
-          #       Implementa una función de limpieza que recorre cada nodo del árbol y 
-          #       elimina del atributo 'exit' todas aquellas entradas que no 
-          #       aparecen en el atributo 'args'. Esta función se debe invocar
-          #       tras construir el árbol. 
-          arbol[-1].exit = inspect.getargvalues(frame).locals
-          arbol[-2].add_tree(arbol[-1])
-          arbol = arbol[:-1]
+          tree[-1].ret = arg
+          tree[-1].out = inspect.getargvalues(frame).locals
+          tree[-2].add_tree(tree[-1])
+          tree = tree[:-1]
       return ret
       
 tfun = sys.gettrace()
@@ -296,12 +396,13 @@ sys.settrace(lambda x,y,z : tracefunc(x,y,z,me_importan))
 exec("quicksort([3,1,5,7,4,-1])") #Enrique: esto ayudará a lanzar la depuración con cualquier objetivo
 #exec("prueba([3,1,5,7,4,-1])")
 sys.settrace(tfun)
-arbol = (arbol[0].h)[0]
-arbol.update_weight()
-arbol.e = State.WRONG
+tree = (tree[0].child)[0]
+tree.update_weight()
+tree.state = State.WRONG
+tree.clean_tree()
 #arbol.h[1].h[1].h[1].e = State.RIGHT
 #arbol.h[1].h[1].h[2].e = State.RIGHT
 #arbol.h[1].h[1].e = State.WRONG
 #arbol.h[1].h[1].h[0].e = State.RIGHT
 #arbol.h[2].e = State.RIGHT
-arbol.pintarest(0)
+tree.paint_state(0)
