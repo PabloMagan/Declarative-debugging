@@ -2,7 +2,7 @@
 """
 Created on Fri Nov 18 10:13:38 2016
 
-@author: usupclab-30
+@author: Pablo Magan Hernandez
 """
 from enums import State
 
@@ -150,7 +150,6 @@ class DebuggingTree(object):
        
     def tree_compression(self):
         i = 0
-        print (len(self.child))
         while i < len(self.child):
             if self.child[i].fun == self.fun:
                 grandchildren = self.child[i].child
@@ -175,7 +174,7 @@ class DebuggingTree(object):
 
     def paint_state(self, n):
         # n = 1
-        print ("\t" * n, self.fun, self.arg, "->", self.ret, "=>", self.state)
+        print ("\t" * n, self.fun, self.arg, "->", self.ret, "=>", self.state, "->", self.out)
         for child in self.child:
             child.paint_state(n + 1)
 
@@ -229,7 +228,7 @@ class DebuggingTree(object):
         """
         
         i = 0
-        while self.h[i].state != State.UNASKED and i < len(self.child):
+        while self.child[i].state != State.UNASKED and i < len(self.child):
             i = i + 1
         return self.child[i]
     
@@ -336,18 +335,36 @@ def quicksort(l):
         l,r = partition(piv, resto)
         l = quicksort(l)
         r = quicksort(r)
-#res = l + [piv] + r
+#        res = l + [piv] + r
         res = l + r
         return res
 
 def partition(p, l):
     res = ([], [])
     for elem in l:
-        if elem <= p:
+        if leq(elem,p):
             res[0].append(elem)
         else:
             res[1].append(elem)
+    l.append(1)
     return res
+
+def leq(a,b):
+    return a <= b   
+
+def suma(a,b):
+    return a*b
+
+def fibonacci(n):
+    if n == 0:
+        return 1
+    elif n == 1:
+        return 1
+    else:
+        return suma(fibonacci(n-2),fibonacci(n-1))
+
+
+
 
 def prueba(lista):
     a = lista[0]
@@ -370,13 +387,14 @@ import inspect
 import copy
 
 tree = [DebuggingTree("foo", None, None)]
-me_importan = ['quicksort', 'partition']
+me_importan = ['quicksort', 'partition','leq']
 #me_importan = ['prueba']
+#me_importan = ['suma','fibonacci']
 
 def tracefunc(frame, event, arg, l):
+    
       global tree
-      ret = None
-      # TODO Faltaría lo de obtener el nombre de modulo y centrarnos solo en ese
+      ret = None 
       
       if event == "call" and frame.f_code.co_name in l:
           # Si no hacemos deepcopy de locals a veces sobreescribe
@@ -389,12 +407,16 @@ def tracefunc(frame, event, arg, l):
           tree[-2].add_tree(tree[-1])
           tree = tree[:-1]
       return ret
+
+
+
       
 tfun = sys.gettrace()
 sys.settrace(lambda x,y,z : tracefunc(x,y,z,me_importan))
 #quicksort([3,1,5,7,4,-1])
-exec("quicksort([3,1,5,7,4,-1])") #Enrique: esto ayudará a lanzar la depuración con cualquier objetivo
+exec("quicksort([3,7,4,-1])")
 #exec("prueba([3,1,5,7,4,-1])")
+#exec("fibonacci(3)")
 sys.settrace(tfun)
 tree = (tree[0].child)[0]
 tree.update_weight()
