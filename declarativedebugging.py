@@ -36,16 +36,16 @@ class DeclarativeDebugging(object):
         
         if answer == "yes":
             tree = self.tree
-            dt.tree.colour_tree(node, State.RIGHT)
+            self.tree.colour_tree(node, State.RIGHT)
             self.tree = tree
             self.tree.update_weight()
         elif answer == "no":
             tree = self.tree
-            dt.tree.colour_tree(node, State.WRONG)
+            self.tree.colour_tree(node, State.WRONG)
             self.tree = tree
             self.tree.update_weight()
         elif answer == "undo":
-            self.tree = self.undo_list[0]
+            self.tree = self.undo_list[-2]
             self.tree.paint_state(1)
             self.undo_list = self.undo_list[:-1]
         elif answer == "td":
